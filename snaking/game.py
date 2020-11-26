@@ -41,6 +41,17 @@ class Direction(Enum):
         elif string.lower().startswith('l'):
             return Direction.LEFT
 
+    @staticmethod
+    def get_inverse(direction):
+        if direction == Direction.UP:
+            return Direction.DOWN
+        elif direction == Direction.RIGHT:
+            return Direction.LEFT
+        elif direction == Direction.DOWN:
+            return Direction.UP
+        elif direction == Direction.LEFT:
+            return Direction.RIGHT
+
 
 @dataclass
 class Dimensions:

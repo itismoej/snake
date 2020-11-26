@@ -58,7 +58,8 @@ class ConnectionConsumer(AsyncWebsocketConsumer):
     async def message(self, event):
         user_id, message = event['message']['user_id'], event['message']['message']
         direction = Direction.from_str(message)
-        self.game.last_direction = direction
+        if direction != Direction.get_inverse(self.game.last_direction):
+            self.game.last_direction = direction
 
     async def send_data(self, user_id):
         await self.send(text_data=json.dumps({
