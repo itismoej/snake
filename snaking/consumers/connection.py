@@ -37,7 +37,12 @@ class ConnectionConsumer(AsyncWebsocketConsumer):
 
     async def looper(self, user_id):
         for i in range(1_000_000_000):
-            self.game.go(self.game.received_directions.pop(0))
+            if len(self.game.received_directions) > 0:
+                to = self.game.received_directions.pop(0)
+            else:
+                to = self.game.last_move
+
+            self.game.go(to)
             await self.send_data(user_id)
             await asyncio.sleep(0.18)
 
