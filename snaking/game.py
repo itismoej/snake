@@ -17,12 +17,25 @@ class Point:
     def __eq__(self, other):
         return self.row == other.row and self.col == other.col
 
+    def to_json(self):
+        return {
+            'x': self.col,
+            'y': self.row,
+        }
+
 
 class Direction(Enum):
     UP = Point(-1, 0)
     RIGHT = Point(0, +1)
     DOWN = Point(+1, 0)
     LEFT = Point(0, -1)
+
+    @staticmethod
+    def from_str(string):
+        if string.lower().startswith('u'): return Direction.UP
+        elif string.lower().startswith('r'): return Direction.RIGHT
+        elif string.lower().startswith('d'): return Direction.DOWN
+        elif string.lower().startswith('l'): return Direction.LEFT
 
 
 @dataclass
@@ -59,7 +72,7 @@ class Board(list):
         self.dimensions: Dimensions = Dimensions()
         tail = self.initialize()
         self.snake: List[Point] = [tail]
-        self.new_apple()
+        self.apple: Point = self.new_apple()
 
     @property
     def snake_head(self) -> Point:
@@ -90,6 +103,8 @@ class Board(list):
         while (apple := self.random_cell()) in self.snake:
             continue
         self.edit_cell(apple.row, apple.col, CellStatus.APPLE)
+        self.apple = apple
+        return apple
 
     def random_cell(self) -> Point:
         row = math.floor(random() * self.dimensions.rows)
@@ -111,6 +126,7 @@ class Game:
 
     def __init__(self, *args, **kwargs, ):
         self.board: Board = Board()
+        self.show()
 
     def move_snake(self, direction: Direction) -> MoveResult:
         head_point: Point = self.board.snake_head
@@ -143,7 +159,6 @@ class Game:
         if move_result == MoveResult.DIE:
             self.board.initialize()
         self.show()
-        print(move_result)
 
     @staticmethod
     def move_result(new_snake_cell: Cell) -> MoveResult:
@@ -163,3 +178,5 @@ class Game:
                     end=' '
                 )
             print()
+
+        print('----')
