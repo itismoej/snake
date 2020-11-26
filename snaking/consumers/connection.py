@@ -24,7 +24,7 @@ class ConnectionConsumer(AsyncWebsocketConsumer):
 
         if not players_in_group < 4:
             await self.send(text_data=json.dumps({
-                'message': 'room is full',
+                'message': 'This room is currently full',
                 'status': -1
             }))
             await self.close(code=-1)
