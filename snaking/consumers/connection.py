@@ -14,6 +14,7 @@ class ConnectionConsumer(AsyncWebsocketConsumer):
         super().__init__(*args, **kwargs)
         self.room: Optional[Room] = None
         self.game: Union[Game, dict] = Game()
+        self.user_id: Optional[int] = None
 
     async def connect(self):
         room_name: str = self.scope['url_route']['kwargs']['room_name']
@@ -27,9 +28,9 @@ class ConnectionConsumer(AsyncWebsocketConsumer):
                 'status': -1
             }))
             await self.close(code=-1)
-        user_id = players_in_group + 1
+        self.user_id = players_in_group + 1
         await self.send(text_data=json.dumps({
-            'auth': user_id,
+            'auth': self.user_id,
         }))
 
         self.game: Union[Game, dict] = Game()
@@ -37,7 +38,7 @@ class ConnectionConsumer(AsyncWebsocketConsumer):
 
         await self.channel_layer.group_add(self.room.name, self.channel_name)
 
-        future = asyncio.ensure_future(self.looper(user_id))
+        future = asyncio.ensure_future(self.looper(self.user_id))
 
     async def looper(self, user_id):
         for i in range(1_000_000_000):
@@ -67,13 +68,14 @@ class ConnectionConsumer(AsyncWebsocketConsumer):
     async def message(self, event):
         event = event['message']
         user_id, message = int(event['user_id']), event['message']
-        direction = Direction.from_str(message)
-        reverse_dir = Direction.get_inverse(self.game.last_move)
-        if (
-                (direction != reverse_dir or len(self.game.board.snake) < 2)
-                and len(self.game.received_directions) < 3
-        ):
-            self.game.received_directions.append(direction)
+        if user_id == self.user_id:
+            direction = Direction.from_str(message)
+            reverse_dir = Direction.get_inverse(self.game.last_move)
+            if (
+                    (direction != reverse_dir or len(self.game.board.snake) < 2)
+                    and len(self.game.received_directions) < 3
+            ):
+                self.game.received_directions.append(direction)
 
     async def send_data(self, user_id):
         await self.channel_layer.group_send(
