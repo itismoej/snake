@@ -67,7 +67,7 @@ class ConnectionConsumer(AsyncWebsocketConsumer):
         )
 
     async def message(self, event):
-        user_id, message = event['message']['user_id'], event['message']['message']
+        user_id, message = int(event['message']['user_id']), event['message']['message']
         direction = Direction.from_str(message)
         reverse_dir = Direction.get_inverse(self.games[user_id - 1].last_move)
         if (
