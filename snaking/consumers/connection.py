@@ -28,6 +28,7 @@ class ConnectionConsumer(AsyncWebsocketConsumer):
                 'status': -1
             }))
             await self.close(code=-1)
+
         self.user_id = players_in_group + 1
         await self.send(text_data=json.dumps({
             'auth': self.user_id,
@@ -37,6 +38,14 @@ class ConnectionConsumer(AsyncWebsocketConsumer):
         self.room = Room(name=room_name)
 
         await self.channel_layer.group_add(self.room.name, self.channel_name)
+
+        await self.channel_layer.group_send(
+            self.room.name,
+            {
+                'type': 'welcome',
+                'welcome': self.user_id
+            }
+        )
 
         future = asyncio.ensure_future(self.looper(self.user_id))
 
@@ -95,6 +104,11 @@ class ConnectionConsumer(AsyncWebsocketConsumer):
             'user_id': event['user_id'],
             'apple': event['apple'],
             'snake': event['snake']
+        }))
+
+    async def welcome(self, event):
+        await self.send(text_data=json.dumps({
+            'welcome': event['welcome']
         }))
 
     @staticmethod
