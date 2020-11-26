@@ -18,14 +18,20 @@ class ConnectionConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         room_name: str = self.scope['url_route']['kwargs']['room_name']
         players_in_group = await self.players_in_group(self.channel_layer, room_name)
+
+        await self.accept()
+
         if not players_in_group < 4:
+            await self.send(text_data=json.dumps({
+                'message': 'room is full',
+                'status': -1
+            }))
             await self.close(code=-1)
 
         user_id = players_in_group + 1
         self.room = Room(name=room_name)
 
         await self.channel_layer.group_add(self.room.name, self.channel_name)
-        await self.accept()
 
         future = asyncio.ensure_future(self.looper(user_id))
 
