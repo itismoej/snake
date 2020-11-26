@@ -1,13 +1,10 @@
 import json
-from functools import reduce
 from typing import Optional
 
 from channels.generic.websocket import AsyncWebsocketConsumer
 
-from ..rooms import RoomStore, Room
 from ..game import Game, Direction
-
-# store = RoomStore()
+from ..rooms import Room
 
 
 class ConnectionConsumer(AsyncWebsocketConsumer):
@@ -19,45 +16,44 @@ class ConnectionConsumer(AsyncWebsocketConsumer):
 
     async def connect(self):
         room_name: str = self.scope['url_route']['kwargs']['room_name']
-
-        if not await self.players_in_group(self.channel_layer, room_name) < 4:
+        players_in_group = await self.players_in_group(self.channel_layer, room_name)
+        if not players_in_group < 4:
             await self.close(code=-1)
 
+        user_id = players_in_group + 1
         self.room = Room(name=room_name)
-        # self.game = Game()
-        # store[self.room.name].append(self.room)
 
         await self.channel_layer.group_add(self.room.name, self.channel_name)
+
         await self.accept()
 
-        await self.send(text_data=json.dumps({
-            'room_name': self.room.name,
-            'apple': self.game.board.apple.to_json(),
-            'snake': list(map(lambda x: x.to_json(), self.game.board.snake)),
-        }))
+        await self.send_data(user_id)
 
     async def disconnect(self, close_code):
         await self.channel_layer.group_discard(self.room.name, self.channel_name)
 
     async def receive(self, text_data=None, bytes_data=None):
         text_data_json = json.loads(text_data)
-        message = text_data_json['message']
 
         await self.channel_layer.group_send(
             self.room.name,
             {
                 'type': 'message',
-                'message': message
+                'message': text_data_json
             }
         )
 
     async def message(self, event):
-        message = event['message']
+        user_id, message = event['message']['user_id'], event['message']['message']
         direction = Direction.from_str(message)
         self.game.go(direction)
 
+        await self.send_data(user_id)
+
+    async def send_data(self, user_id):
         await self.send(text_data=json.dumps({
             'room_name': self.room.name,
+            'user_id': user_id,
             'apple': self.game.board.apple.to_json(),
             'snake': list(map(lambda x: x.to_json(), self.game.board.snake)),
         }))
