@@ -171,7 +171,6 @@ class Game:
         return move_result
 
     def go(self, direction: Direction):
-        self.received_directions.append(direction)
         move_result: MoveResult = self.move_snake(direction)
         if move_result == MoveResult.DIE:
             tail = self.board.initialize()
