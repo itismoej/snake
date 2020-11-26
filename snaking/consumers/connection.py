@@ -49,7 +49,7 @@ class ConnectionConsumer(AsyncWebsocketConsumer):
 
             self.game.go(to)
             await self.send_data(user_id)
-            await asyncio.sleep(0.3)
+            await asyncio.sleep(0.18)
 
     async def disconnect(self, close_code):
         await self.channel_layer.group_discard(self.room.name, self.channel_name)
