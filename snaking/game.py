@@ -5,8 +5,8 @@ from enum import Enum
 from random import random
 from typing import List
 
-DEFAULT_ROW_NUM = 5
-DEFAULT_COL_NUM = 8
+DEFAULT_ROW_NUM = 14
+DEFAULT_COL_NUM = 20
 
 
 @dataclass
