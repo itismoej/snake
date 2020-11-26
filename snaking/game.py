@@ -141,7 +141,8 @@ class Game:
 
     def __init__(self, *args, **kwargs):
         self.board: Board = Board()
-        self.last_direction: Direction = Direction.RIGHT
+        self.last_move: Direction = Direction.RIGHT
+        self.received_directions: List[Direction] = [Direction.RIGHT]
 
     def move_snake(self, direction: Direction) -> MoveResult:
         head_point: Point = self.board.snake_head
@@ -170,12 +171,13 @@ class Game:
         return move_result
 
     def go(self, direction: Direction):
-        self.last_direction = direction
+        self.received_directions.append(direction)
         move_result: MoveResult = self.move_snake(direction)
         if move_result == MoveResult.DIE:
             tail = self.board.initialize()
             self.board.snake = [tail]
             self.board.apple = self.board.new_apple()
+        self.last_move = direction
 
     @staticmethod
     def move_result(new_snake_cell: Cell) -> MoveResult:

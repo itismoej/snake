@@ -37,7 +37,7 @@ class ConnectionConsumer(AsyncWebsocketConsumer):
 
     async def looper(self, user_id):
         for i in range(1_000_000_000):
-            self.game.go(self.game.last_direction)
+            self.game.go(self.game.received_directions.pop(0))
             await self.send_data(user_id)
             await asyncio.sleep(0.18)
 
@@ -58,9 +58,9 @@ class ConnectionConsumer(AsyncWebsocketConsumer):
     async def message(self, event):
         user_id, message = event['message']['user_id'], event['message']['message']
         direction = Direction.from_str(message)
-        reverse_dir = Direction.get_inverse(self.game.last_direction)
+        reverse_dir = Direction.get_inverse(self.game.last_move)
         if direction != reverse_dir or len(self.game.board.snake) < 2:
-            self.game.last_direction = direction
+            self.game.received_directions.append(direction)
 
     async def send_data(self, user_id):
         await self.send(text_data=json.dumps({
