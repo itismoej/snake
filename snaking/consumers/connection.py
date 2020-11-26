@@ -1,3 +1,4 @@
+import asyncio
 import json
 from typing import Optional
 
@@ -24,10 +25,15 @@ class ConnectionConsumer(AsyncWebsocketConsumer):
         self.room = Room(name=room_name)
 
         await self.channel_layer.group_add(self.room.name, self.channel_name)
-
         await self.accept()
 
-        await self.send_data(user_id)
+        future = asyncio.ensure_future(self.looper(user_id))
+
+    async def looper(self, user_id):
+        for i in range(1_000_000_000):
+            self.game.go(self.game.last_direction)
+            await self.send_data(user_id)
+            await asyncio.sleep(0.2)
 
     async def disconnect(self, close_code):
         await self.channel_layer.group_discard(self.room.name, self.channel_name)
@@ -46,9 +52,7 @@ class ConnectionConsumer(AsyncWebsocketConsumer):
     async def message(self, event):
         user_id, message = event['message']['user_id'], event['message']['message']
         direction = Direction.from_str(message)
-        self.game.go(direction)
-
-        await self.send_data(user_id)
+        self.game.last_direction = direction
 
     async def send_data(self, user_id):
         await self.send(text_data=json.dumps({

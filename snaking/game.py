@@ -32,10 +32,14 @@ class Direction(Enum):
 
     @staticmethod
     def from_str(string):
-        if string.lower().startswith('u'): return Direction.UP
-        elif string.lower().startswith('r'): return Direction.RIGHT
-        elif string.lower().startswith('d'): return Direction.DOWN
-        elif string.lower().startswith('l'): return Direction.LEFT
+        if string.lower().startswith('u'):
+            return Direction.UP
+        elif string.lower().startswith('r'):
+            return Direction.RIGHT
+        elif string.lower().startswith('d'):
+            return Direction.DOWN
+        elif string.lower().startswith('l'):
+            return Direction.LEFT
 
 
 @dataclass
@@ -124,9 +128,9 @@ class MoveResult(Enum):
 
 class Game:
 
-    def __init__(self, *args, **kwargs, ):
+    def __init__(self, *args, **kwargs):
         self.board: Board = Board()
-        self.show()
+        self.last_direction: Direction = Direction.RIGHT
 
     def move_snake(self, direction: Direction) -> MoveResult:
         head_point: Point = self.board.snake_head
@@ -155,10 +159,10 @@ class Game:
         return move_result
 
     def go(self, direction: Direction):
+        self.last_direction = direction
         move_result: MoveResult = self.move_snake(direction)
         if move_result == MoveResult.DIE:
             self.board.initialize()
-        self.show()
 
     @staticmethod
     def move_result(new_snake_cell: Cell) -> MoveResult:
