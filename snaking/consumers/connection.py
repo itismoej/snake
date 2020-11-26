@@ -68,13 +68,14 @@ class ConnectionConsumer(AsyncWebsocketConsumer):
 
     async def message(self, event):
         user_id, message = int(event['message']['user_id']), event['message']['message']
-        direction = Direction.from_str(message)
-        reverse_dir = Direction.get_inverse(self.games[user_id - 1].last_move)
-        if (
-                (direction != reverse_dir or len(self.games[user_id - 1].board.snake) < 2)
-                and len(self.games[user_id - 1].received_directions) < 3
-        ):
-            self.games[user_id - 1].received_directions.append(direction)
+        if type(self.games[user_id - 1]) != dict:
+            direction = Direction.from_str(message)
+            reverse_dir = Direction.get_inverse(self.games[user_id - 1].last_move)
+            if (
+                    (direction != reverse_dir or len(self.games[user_id - 1].board.snake) < 2)
+                    and len(self.games[user_id - 1].received_directions) < 3
+            ):
+                self.games[user_id - 1].received_directions.append(direction)
 
     async def send_data(self, user_id):
         games = []
