@@ -27,12 +27,12 @@ class ConnectionConsumer(AsyncWebsocketConsumer):
                 'status': -1
             }))
             await self.close(code=-1)
-
         user_id = players_in_group + 1
         await self.send(text_data=json.dumps({
             'auth': user_id,
         }))
 
+        self.game: Union[Game, dict] = Game()
         self.room = Room(name=room_name)
 
         await self.channel_layer.group_add(self.room.name, self.channel_name)
