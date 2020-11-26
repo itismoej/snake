@@ -162,7 +162,9 @@ class Game:
         self.last_direction = direction
         move_result: MoveResult = self.move_snake(direction)
         if move_result == MoveResult.DIE:
-            self.board.initialize()
+            tail = self.board.initialize()
+            self.board.snake = [tail]
+            self.board.apple = self.board.new_apple()
 
     @staticmethod
     def move_result(new_snake_cell: Cell) -> MoveResult:

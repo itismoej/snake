@@ -33,7 +33,7 @@ class ConnectionConsumer(AsyncWebsocketConsumer):
         for i in range(1_000_000_000):
             self.game.go(self.game.last_direction)
             await self.send_data(user_id)
-            await asyncio.sleep(0.2)
+            await asyncio.sleep(0.1)
 
     async def disconnect(self, close_code):
         await self.channel_layer.group_discard(self.room.name, self.channel_name)
